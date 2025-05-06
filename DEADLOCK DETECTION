@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_P 10
+#define MAX_R 10
+
+int n, m;
+int Allocation[MAX_P][MAX_R];
+int Request[MAX_P][MAX_R];
+int Available[MAX_R];
+bool Finish[MAX_P];
+
+int main() {
+    input();
+    detectDeadlock();
+    return 0;
+}
+
+void input() {
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    printf("Enter number of resources: ");
+    scanf("%d", &m);
+
+    printf("Enter Allocation Matrix (%d x %d):\n", n, m);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            scanf("%d", &Allocation[i][j]);
+
+    printf("Enter Request Matrix (%d x %d):\n", n, m);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            scanf("%d", &Request[i][j]);
+
+    printf("Enter Available Resources (%d):\n", m);
+    for (int i = 0; i < m; i++)
+        scanf("%d", &Available[i]);
+
+    for (int i = 0; i < n; i++)
+        Finish[i] = false;
+}
+
+bool canExecute(int process) {
+    for (int j = 0; j < m; j++) {
+        if (Request[process][j] > Available[j])
+            return false;
+    }
+    return true;
+}
+
+void detectDeadlock() {
+    int count = 0;
+
+    while (count < n) {
+        bool found = false;
+
+        for (int i = 0; i < n; i++) {
+            if (!Finish[i] && canExecute(i)) {
+                for (int j = 0; j < m; j++)
+                    Available[j] += Allocation[i][j];
+
+                Finish[i] = true;
+                found = true;
+                count++;
+            }
+        }
+
+        if (!found)
+            break;
+    }
+
+    printDeadlockProcesses();
+}
+
+void printDeadlockProcesses() {
+    bool deadlock = false;
+    for (int i = 0; i < n; i++) {
+        if (!Finish[i]) {
+            deadlock = true;
+            printf("Process %d is in deadlock.\n", i);
+        }
+    }
+
+    if (!deadlock)
+        printf("No deadlock detected. All processes can complete.\n");
+}
