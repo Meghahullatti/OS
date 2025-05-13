@@ -1,0 +1,111 @@
+#include <stdio.h>
+
+#define MAX_BLOCKS 10
+#define MAX_PROCESSES 10
+
+void printAllocation(const char *strategy, int allocation[], int processSize[], int processes) {
+    printf("\n%s Allocation:\n", strategy);
+    for (int i = 0; i < processes; i++) {
+        if (allocation[i] != -1)
+            printf("Process %d of size %d -> Block %d\n", i + 1, processSize[i], allocation[i] + 1);
+        else
+            printf("Process %d of size %d -> Not Allocated\n", i + 1, processSize[i]);
+    }
+}
+
+void firstFit(int blockSize[], int blocks, int processSize[], int processes) {
+    int allocation[MAX_PROCESSES];
+    for (int i = 0; i < processes; i++) {
+        allocation[i] = -1;
+        for (int j = 0; j < blocks; j++) {
+            if (blockSize[j] >= processSize[i]) {
+                allocation[i] = j;
+                blockSize[j] -= processSize[i];
+                break;
+            }
+        }
+    }
+
+    printAllocation("First Fit", allocation, processSize, processes);
+}
+
+void bestFit(int blockSize[], int blocks, int processSize[], int processes) {
+    int allocation[MAX_PROCESSES];
+    for (int i = 0; i < processes; i++) {
+        int bestIdx = -1;
+        for (int j = 0; j < blocks; j++) {
+            if (blockSize[j] >= processSize[i]) {
+                if (bestIdx == -1 || blockSize[j] < blockSize[bestIdx]) {
+                    bestIdx = j;
+                }
+            }
+        }
+
+        if (bestIdx != -1) {
+            allocation[i] = bestIdx;
+            blockSize[bestIdx] -= processSize[i];
+        } else {
+            allocation[i] = -1;
+        }
+    }
+
+    printAllocation("Best Fit", allocation, processSize, processes);
+}
+
+void worstFit(int blockSize[], int blocks, int processSize[], int processes) {
+    int allocation[MAX_PROCESSES];
+    for (int i = 0; i < processes; i++) {
+        int worstIdx = -1;
+        for (int j = 0; j < blocks; j++) {
+            if (blockSize[j] >= processSize[i]) {
+                if (worstIdx == -1 || blockSize[j] > blockSize[worstIdx]) {
+                    worstIdx = j;
+                }
+            }
+        }
+
+        if (worstIdx != -1) {
+            allocation[i] = worstIdx;
+            blockSize[worstIdx] -= processSize[i];
+        } else {
+            allocation[i] = -1;
+        }
+    }
+
+    printAllocation("Worst Fit", allocation, processSize, processes);
+}
+
+int main() {
+    int blockSize[MAX_BLOCKS], processSize[MAX_PROCESSES];
+    int blocks, processes;
+
+    printf("Enter number of memory blocks: ");
+    scanf("%d", &blocks);
+    printf("Enter size of each block:\n");
+    for (int i = 0; i < blocks; i++) {
+        printf("Block %d: ", i + 1);
+        scanf("%d", &blockSize[i]);
+    }
+
+    printf("Enter number of processes: ");
+    scanf("%d", &processes);
+    printf("Enter size of each process:\n");
+    for (int i = 0; i < processes; i++) {
+        printf("Process %d: ", i + 1);
+        scanf("%d", &processSize[i]);
+    }
+
+    // Create copies of block sizes for each method
+    int blockSize1[MAX_BLOCKS], blockSize2[MAX_BLOCKS], blockSize3[MAX_BLOCKS];
+    for (int i = 0; i < blocks; i++) {
+        blockSize1[i] = blockSize[i];
+        blockSize2[i] = blockSize[i];
+        blockSize3[i] = blockSize[i];
+    }
+
+    firstFit(blockSize1, blocks, processSize, processes);
+    bestFit(blockSize2, blocks, processSize, processes);
+    worstFit(blockSize3, blocks, processSize, processes);
+
+    return 0;
+}
